@@ -51,7 +51,7 @@ class App extends Component {
   }
 
   genURL(endpoint) {
-    return 'https://cors-anywhere.herokuapp.com/' + 'https://' + this.state.server + endpoint;
+    return 'https://cors-anywhere.herokuapp.com/https://' + this.state.server + endpoint;
   }
   
   genDefaultFetchObj() {
@@ -77,6 +77,11 @@ class App extends Component {
   render() {
     const now = new Date();
 
+    const pastDue = this.state.issues.filter(issue => compareDates(issueDueDate(issue), now) < 0);
+    const dueToday = this.state.issues.filter(issue => compareDates(issueDueDate(issue), now) === 0);
+    const dueThisWeek = this.state.issues.filter(issue => sameWeek(issueDueDate(issue), now));
+    const other = this.state.issues.filter(issue => compareDates(issueDueDate(issue), now) > 0 && !sameWeek(issueDueDate(issue), now));
+
     return (
       <div>
         <Config
@@ -85,17 +90,24 @@ class App extends Component {
           apiToken={this.state.apiToken}
           saveConfig={o => this.saveConfig(o)} />
 
-        <label>Past Due:</label>
-        <IssueList issues={this.state.issues.filter(issue => compareDates(issueDueDate(issue), now) < 0)} />
+        <br />
 
-        <label>Due Today:</label>
-        <IssueList issues={this.state.issues.filter(issue => compareDates(issueDueDate(issue), now) === 0)} />
+        <label>Total Issues: {this.state.issues.length}</label>
 
-        <label>Due This Week:</label>
-        <IssueList issues={this.state.issues.filter(issue => sameWeek(issueDueDate(issue), now))} />
+        <br />
+        <br />
 
-        <label>Other:</label>
-        <IssueList issues={this.state.issues.filter(issue => compareDates(issueDueDate(issue), now) > 0 && !sameWeek(issueDueDate(issue), now))} />
+        <label>Past Due ({pastDue.length}):</label>
+        <IssueList issues={pastDue} />
+
+        <label>Due Today ({dueToday.length}):</label>
+        <IssueList issues={dueToday} />
+
+        <label>Due This Week ({dueThisWeek.length}):</label>
+        <IssueList issues={dueThisWeek} />
+
+        <label>Other ({other.length}):</label>
+        <IssueList issues={other} />
       </div>
     );
   }
@@ -149,25 +161,36 @@ class Config extends React.Component {
   render() {
     return (
       <div>
-        <label>Server:</label>
+        <label style={{marginRight: '5px'}}>Server:</label>
         <input
           id='server'
           value={this.state.server}
           required
+          placeholder='your.jira.server.com'
           onChange={(e) => this.setState({server: e.target.value})} />
-        <label>Username:</label>
+
+        <br />
+
+        <label style={{marginRight: '5px'}}>Username:</label>
         <input
           id='username'
           value={this.state.username}
           required
+          placeholder='user@domain.com'
           onChange={(e) => this.setState({username: e.target.value})} />
-        <label>API Token:</label>
+
+        <br />
+
+        <label style={{marginRight: '5px'}}>API Token:</label>
         <input
           id='api-token'
           value={this.state.apiToken}
           required
+          placeholder='12345abcde'
           onChange={(e) => this.setState({apiToken: e.target.value})} />
+
         <br />
+
         <button onClick={() => this.props.saveConfig(this.state)}>Save</button>
       </div>
     );
