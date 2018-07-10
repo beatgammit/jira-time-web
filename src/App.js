@@ -10,12 +10,13 @@ class App extends Component {
       issues: [],
       username: localStorage.getItem('username'),
       apiToken: localStorage.getItem('apiToken'),
+      proxy: localStorage.getItem('proxy'),
       server: localStorage.getItem('server'),
     };
   }
 
   componentDidMount() {
-    if (this.state.server && this.state.username && this.state.apiToken) {
+    if (this.state.server && this.state.username && this.state.apiToken && this.state.proxy) {
       this.loadIssues();
     }
   }
@@ -51,7 +52,7 @@ class App extends Component {
   }
 
   genURL(endpoint) {
-    return 'https://cors-anywhere.herokuapp.com/https://' + this.state.server + endpoint;
+    return this.state.proxy + '/https://' + this.state.server + endpoint;
   }
   
   genDefaultFetchObj() {
@@ -66,12 +67,13 @@ class App extends Component {
     });
   }
 
-  saveConfig({server, username, apiToken}) {
+  saveConfig({server, username, apiToken, proxy}) {
     localStorage.setItem('server', server);
     localStorage.setItem('username', username);
     localStorage.setItem('apiToken', apiToken);
+    localStorage.setItem('proxy', proxy);
 
-    this.setState({server, username, apiToken}, () => this.loadIssues);
+    this.setState({server, username, apiToken, proxy}, () => this.loadIssues);
   }
 
   render() {
@@ -88,6 +90,7 @@ class App extends Component {
           server={this.state.server}
           username={this.state.username}
           apiToken={this.state.apiToken}
+          proxy={this.state.proxy}
           saveConfig={o => this.saveConfig(o)} />
 
         <br />
@@ -161,6 +164,7 @@ class Config extends React.Component {
       server: props.server || '',
       username: props.username || '',
       apiToken: props.apiToken || '',
+      proxy: props.proxy || '',
     };
   }
 
@@ -194,6 +198,16 @@ class Config extends React.Component {
           required
           placeholder='12345abcde'
           onChange={(e) => this.setState({apiToken: e.target.value})} />
+
+        <br />
+
+        <label style={{marginRight: '5px'}}>Proxy:</label>
+        <input
+          id='proxy'
+          value={this.state.proxy}
+          required
+          placeholder='https://cors-anywhere.herokuapp.com/'
+          onChange={(e) => this.setState({proxy: e.target.value})} />
 
         <br />
 
